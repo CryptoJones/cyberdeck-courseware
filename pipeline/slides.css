@@ -1,0 +1,59 @@
+/* Cyberdeck SLIDE styling — full-bleed 1280x720 decks for the stats course.
+   Palette mirrors pipeline/cyberdeck.css :root; this file lays out slides
+   (not the scrolling audio-review UI the base theme was born for). BIG fonts. */
+:root {
+  --bg:#07090f; --panel:#0c1018; --fg:#cfd8e3; --accent:#27d4ff;
+  --green:#55ff99; --mint:#9fffe0; --dim:#5a6678; --alert:#ff4f4f; --amber:#ff9b3d;
+  --violet:#b8a8ff;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { width:1280px; height:720px; overflow:hidden; }
+body {
+  background:
+    radial-gradient(circle at 18% 12%, #122033 0, transparent 45%),
+    linear-gradient(transparent 0, transparent calc(100% - 1px), #101826 100%),
+    repeating-linear-gradient(90deg, #0b1018 0 39px, #0e1626 39px 40px),
+    var(--bg);
+  background-size:auto, 40px 40px, 40px 40px, auto;
+  color:var(--fg);
+  font-family:Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  font-size:26px; line-height:1.4;
+  /* Safe area / bleed: the render applies a gentle Ken Burns zoom (~2% crop per
+     edge), so keep content well inside the frame. Padding > the crop on every side. */
+  padding:72px 104px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.kicker { color:var(--green); font-size:20px; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:14px; }
+h1 { color:var(--accent); font-size:62px; line-height:1.05; font-weight:700;
+  text-shadow:0 0 18px #27d4ff66; margin-bottom:8px; }
+h2 { color:var(--accent); font-size:44px; font-weight:700;
+  text-shadow:0 0 14px #27d4ff55; margin-bottom:24px; }
+h1 .sub, .subtitle { display:block; color:var(--fg); font-size:28px;
+  text-shadow:none; margin-top:18px; font-weight:400; }
+ul { list-style:none; margin-top:10px; }
+li { position:relative; padding-left:42px; margin:18px 0; font-size:30px; }
+li::before { content:"▸"; position:absolute; left:0; color:var(--green);
+  text-shadow:0 0 10px #55ff9988; }
+.hl { color:var(--mint); }
+.cyan { color:var(--accent); } .green { color:var(--green); }
+.amber { color:var(--amber); } .violet { color:var(--violet); }
+.callout { border:2px solid var(--accent); border-radius:12px;
+  background:#0c1320cc; padding:24px 30px; margin-top:24px;
+  box-shadow:0 0 24px #27d4ff22; font-size:30px; }
+.callout .label { color:var(--green); font-size:18px; letter-spacing:2px;
+  text-transform:uppercase; display:block; margin-bottom:8px; }
+table { border-collapse:collapse; margin-top:20px; font-size:23px; max-width:100%; }
+th,td { border:1px solid var(--dim); padding:9px 16px; text-align:center; }
+th { color:var(--accent); background:#0c1320; }
+td { color:var(--fg); }
+.formula { font-size:38px; color:var(--mint); text-align:center;
+  margin:28px 0; text-shadow:0 0 12px #9fffe055; }
+footer { position:absolute; bottom:40px; left:104px; right:104px;
+  display:flex; justify-content:space-between; color:var(--dim); font-size:16px; }
+.refs li { font-size:24px; color:var(--fg); }
+.refs li::before { content:"·"; color:var(--dim); }
+.center { text-align:center; align-items:center; }
+.badge { display:inline-block; border:1px solid var(--green); color:var(--green);
+  border-radius:20px; padding:4px 16px; font-size:18px; margin-top:18px;
+  box-shadow:0 0 12px #55ff9933; }

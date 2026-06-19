@@ -1,0 +1,33 @@
+Cyberdeck Courseware
+Copyright 2026 Aaron K. Clark
+
+This product includes software developed by Aaron K. Clark, licensed under the
+Apache License, Version 2.0 (see LICENSE).
+
+----------------------------------------------------------------------
+Third-party components (not bundled; fetched or installed separately)
+----------------------------------------------------------------------
+
+- Manim Community Edition — animation engine (MIT License).
+  https://www.manim.community/
+
+- Kokoro ONNX neural text-to-speech model weights, fetched by
+  pipeline/fetch_models.sh (Apache-2.0; see the kokoro-onnx project).
+  https://github.com/thewh1teagle/kokoro-onnx
+
+- FFmpeg — used for the Ken Burns zoompan, particle compositing, and xfade
+  stitching (LGPL/GPL depending on build). https://ffmpeg.org/
+
+- A headless Chromium/Chrome is used to rasterize HTML slides to PNG.
+
+----------------------------------------------------------------------
+About the example course
+----------------------------------------------------------------------
+
+The bundled example (examples/demo-pythagoras/) is an ORIGINAL work created for
+this repository on a public-domain mathematical topic. It is provided solely to
+demonstrate the pipeline and carries the same Apache-2.0 license as the code.
+
+This pipeline can be pointed at any course material you have the right to use.
+Course content you author is yours; do NOT commit copyrighted source textbooks
+or course inputs into a repository you publish.
