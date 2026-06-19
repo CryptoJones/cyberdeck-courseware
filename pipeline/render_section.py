@@ -13,6 +13,7 @@ Tunables via env (see build_section.sh): VOICE, KOKORO_SPEED, FADE, ZOOM_MAX,
 LEAD, TAIL, FPS, RES.
 """
 import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -33,12 +34,28 @@ LEAD = float(os.environ.get("LEAD", "0.4"))
 TAIL = float(os.environ.get("TAIL", "0.7"))
 MIN_BEAT = 2.0
 QA_STRICT = os.environ.get("QA_STRICT", "1") != "0"  # fail the build on edge-bleed
+MANIM_TIMEOUT = int(os.environ.get("MANIM_TIMEOUT", "600"))  # sec/scene; guards manim exit-hangs
 PARTICLES = HERE / "assets" / "particles.mp4"
 
 
-def run(cmd, **kw):
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.STDOUT, **kw)
+def run(cmd, timeout=None, **kw):
+    if timeout is None:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.STDOUT, **kw)
+        return
+    # Timeout path: own process group so a hung child (and its ffmpeg) can be killed
+    # as a group. Manim can deadlock at interpreter exit on a stray non-daemon
+    # (watchdog) thread; without this the wait() blocks forever and freezes the queue.
+    p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+                         start_new_session=True, **kw)
+    try:
+        rc = p.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        os.killpg(os.getpgid(p.pid), signal.SIGKILL)
+        p.wait()
+        raise
+    if rc != 0:
+        raise subprocess.CalledProcessError(rc, cmd)
 
 
 def probe(path) -> float:
@@ -64,12 +81,31 @@ def synth_beat(text, wav: Path) -> float:
 def render_manim(py: Path, scene: str, media: Path) -> Path:
     media.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, PYTHONPATH=str(HERE))
-    run([sys.executable, "-m", "manim", "-qm", "--fps", str(FPS), "-r", f"{W},{H}",
-         "--media_dir", str(media), "-o", scene, str(py), scene], env=env)
-    hits = list(media.glob(f"videos/**/{scene}.mp4"))
-    if not hits:
-        raise RuntimeError(f"manim produced no clip for {scene}")
-    return max(hits, key=lambda p: p.stat().st_mtime)
+    cmd = [sys.executable, "-m", "manim", "-qm", "--fps", str(FPS), "-r", f"{W},{H}",
+           "--media_dir", str(media), "-o", scene, str(py), scene]
+
+    def clip():
+        hits = list(media.glob(f"videos/**/{scene}.mp4"))
+        return max(hits, key=lambda p: p.stat().st_mtime) if hits else None
+
+    for attempt in (1, 2):
+        try:
+            run(cmd, env=env, timeout=MANIM_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            c = clip()
+            if c is not None:
+                # Render finished; only manim's exit deadlocked (killed above) -> accept it.
+                print(f"manim hung at exit on {scene}; output present, continuing",
+                      flush=True)
+                return c
+            print(f"manim TIMEOUT with no output on {scene} (attempt {attempt}/2)",
+                  flush=True)
+            continue
+        c = clip()
+        if c is not None:
+            return c
+        print(f"manim produced no clip for {scene} (attempt {attempt}/2)", flush=True)
+    raise RuntimeError(f"manim produced no clip for {scene} after retries")
 
 
 def slide_clip(png: Path, D: float, out: Path):
