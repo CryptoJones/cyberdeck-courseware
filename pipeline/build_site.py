@@ -12,12 +12,16 @@ sessionStorage flag so the next page auto-plays through autoplay-blocks, and a
 remembered "Autoplay next" toggle) — and the index links the player pages, not the
 raw mp4s. No wall-clock timers. Pattern from the AKC-Neuromancer listen deck.
 
-Configure the page without editing code:
-  COURSE_TITLE      page title + H1     (default "Cyberdeck Courseware")
-  COURSE_SUBTITLE   the note under H1   (default a generic blurb)
-  COURSE_ACCENT     monochrome accent hex (or --accent <hex>), e.g. #15d6c0;
-                    default keeps the cyan/green/mint cyberdeck scheme
+Configure at runtime — CLI flag wins, then COURSE_* env, then default — so ONE
+build_site.py serves any course with nothing hardcoded:
+  --title    / COURSE_TITLE     page title + H1   (default "Cyberdeck Courseware")
+  --subtitle / COURSE_SUBTITLE  the note under H1 (default a generic blurb)
+  --tag      / COURSE_TAG       header kicker + footer credit (default "Cyberdeck Courseware")
+  --accent   / COURSE_ACCENT    monochrome accent hex, e.g. #15d6c0; default keeps
+                                the multi-color cyan/green/mint cyberdeck scheme
   course/chapters.tsv  optional "chapter<TAB>name" rows for chapter headings
+
+  pipeline/build_site.py --bundle dist --title "My Course" --accent "#ff6a00"
 
 The --bundle output is host-agnostic: index.html links videos/<slug>.html relatively,
 so serving DIR at any URL path just works. Videos are hardlinked when on the same
@@ -32,11 +36,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TITLE = os.environ.get("COURSE_TITLE", "Cyberdeck Courseware")
-SUBTITLE = os.environ.get(
-    "COURSE_SUBTITLE",
-    "A free video course. Each section is a narrated lesson with animated diagrams.",
-)
 
 
 def _arg(flag):
@@ -44,11 +43,24 @@ def _arg(flag):
     return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv else None
 
 
+def _cfg(flag, env, default):
+    """One config value: CLI flag wins, then env var, then default — so a SINGLE
+    build_site.py serves every course with nothing hardcoded. Each course just
+    passes its own --title / --subtitle / --accent / --tag (or COURSE_* env)."""
+    val = _arg(flag)
+    return val if val is not None else os.environ.get(env, default)
+
+
+# Per-course identity — all runtime parameters, zero hardcoding:
+TITLE = _cfg("--title", "COURSE_TITLE", "Cyberdeck Courseware")
+SUBTITLE = _cfg("--subtitle", "COURSE_SUBTITLE",
+                "A free video course. Each section is a narrated lesson with animated diagrams.")
+TAG = _cfg("--tag", "COURSE_TAG", "Cyberdeck Courseware")  # header kicker + footer credit
+
 #: The default cyberdeck cyan-scheme. Passing an accent (--accent / COURSE_ACCENT)
-#: recolors all three to that one hex, giving the per-course monochrome look; the
-#: default ("" = no accent) leaves the multi-color cyberdeck scheme untouched.
+#: recolors all three to that one hex (per-course monochrome); default keeps it.
 SCHEME = ("#27d4ff", "#55ff99", "#9fffe0")
-ACCENT = _arg("--accent") or os.environ.get("COURSE_ACCENT", "")
+ACCENT = _cfg("--accent", "COURSE_ACCENT", "")
 
 
 def _recolor(s):
@@ -172,11 +184,11 @@ def main():
     chapter_names = load_chapter_names()
 
     parts = ["<!doctype html><html><head><meta charset='utf-8'>",
-             f"<title>{TITLE}</title>",
+             f"<title>{html.escape(TITLE)}</title>",
              f"<style>{_recolor(CSS)}</style></head><body>",
-             "<header><div class='tag'>Cyberdeck Courseware</div>",
-             f"<h1>{TITLE}</h1>",
-             f"<div class='note'>{SUBTITLE}</div></header>"]
+             f"<header><div class='tag'>{html.escape(TAG)}</div>",
+             f"<h1>{html.escape(TITLE)}</h1>",
+             f"<div class='note'>{html.escape(SUBTITLE)}</div></header>"]
 
     bundle = None
     if "--bundle" in sys.argv:
@@ -212,7 +224,7 @@ def main():
                          f"<span class='badge todo'>rendering…</span></a>")
 
     parts.append(f"<footer>{done} of {len(rows)} sections rendered. "
-                 "Built with <em>Cyberdeck Courseware</em>.<br><br>"
+                 f"Built with <em>{html.escape(TAG)}</em>.<br><br>"
                  "<em>Proudly Made in Nebraska. Go Big Red! 🌽 "
                  "https://xkcd.com/2347/</em></footer></body></html>")
 
