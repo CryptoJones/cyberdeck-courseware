@@ -93,6 +93,9 @@ a.row.todo{opacity:.5;cursor:default;pointer-events:none}
 .badge.todo{border-color:#5a6678;color:#5a6678}
 footer{margin-top:48px;color:#5a6678;font-size:14px;border-top:1px solid #141a26;padding-top:18px}
 footer em{color:#88aaaa}
+a.deck{display:inline-block;margin-top:18px;color:#27d4ff;text-decoration:none;font-size:15px;
+  border:1px solid #27d4ff55;border-radius:8px;padding:9px 16px;background:#0c1320;transition:.15s}
+a.deck:hover{background:#13233a;border-color:#27d4ff}
 """
 
 PLAYER_PAGE = """<!doctype html><html lang='en'><head><meta charset='utf-8'>
@@ -188,7 +191,9 @@ def main():
              f"<style>{_recolor(CSS)}</style></head><body>",
              "<header>" + (f"<div class='tag'>{html.escape(TAG)}</div>" if TAG else ""),
              f"<h1>{html.escape(TITLE)}</h1>",
-             f"<div class='note'>{html.escape(SUBTITLE)}</div></header>"]
+             f"<div class='note'>{html.escape(SUBTITLE)}</div>"
+             "<a class='deck' href='slides.pdf'>&#128196; Full slide deck (PDF) — slides + room for notes</a>"
+             "</header>"]
 
     bundle = None
     if "--bundle" in sys.argv:
