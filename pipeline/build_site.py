@@ -15,6 +15,8 @@ raw mp4s. No wall-clock timers. Pattern from the AKC-Neuromancer listen deck.
 Configure the page without editing code:
   COURSE_TITLE      page title + H1     (default "Cyberdeck Courseware")
   COURSE_SUBTITLE   the note under H1   (default a generic blurb)
+  COURSE_ACCENT     monochrome accent hex (or --accent <hex>), e.g. #15d6c0;
+                    default keeps the cyan/green/mint cyberdeck scheme
   course/chapters.tsv  optional "chapter<TAB>name" rows for chapter headings
 
 The --bundle output is host-agnostic: index.html links videos/<slug>.html relatively,
@@ -35,6 +37,27 @@ SUBTITLE = os.environ.get(
     "COURSE_SUBTITLE",
     "A free video course. Each section is a narrated lesson with animated diagrams.",
 )
+
+
+def _arg(flag):
+    """Value after a CLI flag (e.g. --accent #15d6c0), or None if absent."""
+    return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv else None
+
+
+#: The default cyberdeck cyan-scheme. Passing an accent (--accent / COURSE_ACCENT)
+#: recolors all three to that one hex, giving the per-course monochrome look; the
+#: default ("" = no accent) leaves the multi-color cyberdeck scheme untouched.
+SCHEME = ("#27d4ff", "#55ff99", "#9fffe0")
+ACCENT = _arg("--accent") or os.environ.get("COURSE_ACCENT", "")
+
+
+def _recolor(s):
+    """Collapse the cyan-scheme to ACCENT (monochrome), or return s unchanged."""
+    if not ACCENT:
+        return s
+    for hexc in SCHEME:
+        s = s.replace(hexc, ACCENT)
+    return s
 
 CSS = """
 *{box-sizing:border-box;margin:0;padding:0}
@@ -129,12 +152,13 @@ def write_player_pages(bundle, rendered):
     """rendered = [(slug, section, title), ...] in play order. Writes one auto-advancing
     player page per section, chained over THIS list (so next/prev never hit a 404)."""
     vdir = bundle / "videos"
+    tmpl = _recolor(PLAYER_PAGE)
     for i, (slug, section, title) in enumerate(rendered):
         last = i == len(rendered) - 1
         nxt = "" if last else rendered[i + 1][0] + ".html"
         prv = "../index.html" if i == 0 else rendered[i - 1][0] + ".html"
         upnext = "Course complete &#10003;" if last else f"Up next: {html.escape(rendered[i + 1][2])}"
-        page = PLAYER_PAGE.format(
+        page = tmpl.format(
             course=html.escape(TITLE), num=html.escape(section),
             title=html.escape(title), slug=html.escape(slug),
             prev=prv, next=(nxt or "../index.html"),
@@ -149,7 +173,7 @@ def main():
 
     parts = ["<!doctype html><html><head><meta charset='utf-8'>",
              f"<title>{TITLE}</title>",
-             f"<style>{CSS}</style></head><body>",
+             f"<style>{_recolor(CSS)}</style></head><body>",
              "<header><div class='tag'>Cyberdeck Courseware</div>",
              f"<h1>{TITLE}</h1>",
              f"<div class='note'>{SUBTITLE}</div></header>"]
