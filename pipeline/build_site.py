@@ -55,7 +55,7 @@ def _cfg(flag, env, default):
 TITLE = _cfg("--title", "COURSE_TITLE", "Cyberdeck Courseware")
 SUBTITLE = _cfg("--subtitle", "COURSE_SUBTITLE",
                 "A free video course. Each section is a narrated lesson with animated diagrams.")
-TAG = _cfg("--tag", "COURSE_TAG", "Cyberdeck Courseware")  # header kicker + footer credit
+TAG = _cfg("--tag", "COURSE_TAG", "")  # optional header kicker; omitted when empty
 
 #: The default cyberdeck cyan-scheme. Passing an accent (--accent / COURSE_ACCENT)
 #: recolors all three to that one hex (per-course monochrome); default keeps it.
@@ -132,7 +132,7 @@ footer{{margin-top:26px;color:#5a6678;font-size:13px;border-top:1px solid #141a2
   <span class='upnext'>{upnext}</span>
   <a class='nav next {nextcls}' href='{next}'>Next &#9654;</a>
 </div>
-<footer>{course} &middot; OpenCourseWare &middot; <em>Made in Nebraska 🌽</em></footer>
+<footer>{course} &middot; <em>Made in Nebraska 🌽</em></footer>
 <script>
 const NEXT={next_js};                         // next player page, or "" at course end
 const _v=document.getElementById('v'), _t=document.getElementById('auto');
@@ -186,7 +186,7 @@ def main():
     parts = ["<!doctype html><html><head><meta charset='utf-8'>",
              f"<title>{html.escape(TITLE)}</title>",
              f"<style>{_recolor(CSS)}</style></head><body>",
-             f"<header><div class='tag'>{html.escape(TAG)}</div>",
+             "<header>" + (f"<div class='tag'>{html.escape(TAG)}</div>" if TAG else ""),
              f"<h1>{html.escape(TITLE)}</h1>",
              f"<div class='note'>{html.escape(SUBTITLE)}</div></header>"]
 
@@ -223,8 +223,7 @@ def main():
                          f"<span class='ttl'>{r['title']}</span>"
                          f"<span class='badge todo'>rendering…</span></a>")
 
-    parts.append(f"<footer>{done} of {len(rows)} sections rendered. "
-                 f"Built with <em>{html.escape(TAG)}</em>.<br><br>"
+    parts.append(f"<footer>{done} of {len(rows)} sections rendered.<br><br>"
                  "<em>Proudly Made in Nebraska. Go Big Red! 🌽 "
                  "https://xkcd.com/2347/</em></footer></body></html>")
 
