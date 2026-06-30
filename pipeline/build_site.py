@@ -133,7 +133,7 @@ footer{{margin-top:26px;color:#5a6678;font-size:13px;border-top:1px solid #141a2
   <a class='nav prev' href='{prev}'>&#9664; Prev</a>
   <label class='toggle'><input type='checkbox' id='auto' checked> Autoplay next</label>
   <span class='upnext'>{upnext}</span>
-  <a class='nav next {nextcls}' href='{next}'>Next &#9654;</a>
+  <a class='nav next {nextcls}' href='{next}'>{nextlabel}</a>
 </div>
 <footer>{course} &middot; <em>Made in Nebraska 🌽</em></footer>
 <script>
@@ -170,14 +170,22 @@ def write_player_pages(bundle, rendered):
     tmpl = _recolor(PLAYER_PAGE)
     for i, (slug, section, title) in enumerate(rendered):
         last = i == len(rendered) - 1
-        nxt = "" if last else rendered[i + 1][0] + ".html"
         prv = "../index.html" if i == 0 else rendered[i - 1][0] + ".html"
-        upnext = "Course complete &#10003;" if last else f"Up next: {html.escape(rendered[i + 1][2])}"
+        quiz_route = "--no-quiz" not in sys.argv   # default: video -> section quiz -> next video
+        if quiz_route:
+            tgt = f"../quiz.html?s={slug}"; nextval = tgt
+            upnext = "Up next: Quiz for this section"
+            nextlabel = "Take the quiz &#9654;"; nextcls = ""
+        else:
+            nxt = "" if last else rendered[i + 1][0] + ".html"
+            tgt = nxt or "../index.html"; nextval = nxt
+            upnext = "Course complete &#10003;" if last else f"Up next: {html.escape(rendered[i + 1][2])}"
+            nextlabel = "Next &#9654;"; nextcls = "disabled" if last else ""
         page = tmpl.format(
             course=html.escape(TITLE), num=html.escape(section),
             title=html.escape(title), slug=html.escape(slug),
-            prev=prv, next=(nxt or "../index.html"),
-            nextcls="disabled" if last else "", upnext=upnext, next_js=json.dumps(nxt))
+            prev=prv, next=tgt, nextcls=nextcls, upnext=upnext,
+            nextlabel=nextlabel, next_js=json.dumps(nextval))
         (vdir / f"{slug}.html").write_text(page, encoding="utf-8")
 
 
