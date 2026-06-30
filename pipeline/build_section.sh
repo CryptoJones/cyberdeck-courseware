@@ -26,5 +26,7 @@ PY="$HERE/.venv/bin/python"
 
 echo "== narration transcript =="
 "$PY" "$HERE/narrate.py" "$SECDIR"
+echo "== lint diagrams (manim footguns) =="
+"$PY" "$HERE/lint_diagrams.py" "$SECDIR/diagrams"
 echo "== rendering section: $SECTION =="
 "$PY" "$HERE/render_section.py" "$SECDIR"

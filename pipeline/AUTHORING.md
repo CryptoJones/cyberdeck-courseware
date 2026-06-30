@@ -102,3 +102,19 @@ in `self.safe_fit(VGroup(...))`).
 ## Deliverable
 For each section: `script.md`, `slides/NN-*.html` (including references), and
 `diagrams/*.py` with all scenes test-rendering clean.
+
+## manim 0.20 gotcha — never lagged-animate arrows (renders hang, no output)
+
+`LaggedStartMap(GrowArrow, arrows, ...)` (and `LaggedStartMap(Create, <arrows>)`) crash
+manim 0.20 with `AttributeError: ArrowTriangleFilledTip has no attribute hex`. The render
+produces **no clip** and the process hangs until the pipeline timeout (~20 min wasted),
+then fails the section. This bit Discrete §7.4 (SameCardinality) twice.
+
+**Do instead:**
+- Arrows: `self.play(LaggedStartMap(FadeIn, arrows, lag_ratio=0.15))`, or
+  `self.play(*[GrowArrow(a) for a in arrows])` (each arrow as its own animation).
+- `Create`/`GrowArrow` on a SINGLE arrow (`self.play(GrowArrow(a))`) is fine — only the
+  LaggedStartMap-over-arrows form is broken.
+
+`pipeline/lint_diagrams.py` (run automatically by `build_section.sh` before each render)
+fails fast on this pattern so you find out in seconds, not 20 minutes.
