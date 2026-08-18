@@ -9,6 +9,11 @@ set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"
 LOG="$ROOT/course/render.log"
+# A course started by copying another course's pipeline/ inherits that venv's
+# console-script shebangs, so pip and friends silently target the OTHER venv.
+# Self-heal on startup; prints nothing when there is nothing to fix.
+python3 "$HERE/fix_venv_shebangs.py" --quiet || true
+
 : > "$LOG"
 ok=0; fail=0; skip=0
 for slug in $(tail -n +2 "$ROOT/course/manifest.tsv" | cut -f1); do

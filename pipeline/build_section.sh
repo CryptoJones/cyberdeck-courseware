@@ -16,6 +16,11 @@ export RES="${RES:-1280x720}"
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# A course started by copying another course's pipeline/ inherits that venv's
+# console-script shebangs, so pip and friends silently target the OTHER venv.
+# Self-heal on startup; prints nothing when there is nothing to fix.
+python3 "$HERE/fix_venv_shebangs.py" --quiet || true
+
 ROOT="$(dirname "$HERE")"
 SECTION="${1:?usage: build_section.sh <section-folder-name>}"
 SECDIR="$ROOT/course/$SECTION"
