@@ -34,15 +34,20 @@ DEFAULT_ACCENT = "#27d4ff"
 # __ACCENT__ is substituted per page. A placeholder token rather than str.format
 # because the JS below is full of braces.
 BLOCK = """<style>
-.spd{display:flex;align-items:center;gap:9px;color:__ACCENT__;font-size:14px;
+/* Prefer the page's own --accent when it themes with one (Contemporary Color),
+   else the accent sniffed out of its h1 rule (the cyberdeck courses). */
+.spd{--spd:var(--accent, __ACCENT__);
+  display:flex;align-items:center;gap:9px;color:var(--spd);font-size:14px;
   white-space:nowrap;user-select:none}
-.spd button{font:inherit;color:#cfd8e3;background:#0e1a2c;border:1px solid __ACCENT__44;
+.spd button{font:inherit;color:inherit;background:transparent;
+  border:1px solid color-mix(in srgb, var(--spd) 45%, transparent);
   border-radius:6px;width:30px;height:28px;cursor:pointer;line-height:1;padding:0}
-.spd button:hover{border-color:__ACCENT__;background:#13233a}
-.spd input[type=range]{accent-color:__ACCENT__;width:150px;cursor:pointer;vertical-align:middle}
-.spd .rate{min-width:58px;text-align:center;color:#cfd8e3;cursor:pointer;
-  border-bottom:1px dotted __ACCENT__88}
-.spd .rate:hover{color:__ACCENT__}
+.spd button:hover{border-color:var(--spd);
+  background:color-mix(in srgb, var(--spd) 14%, transparent)}
+.spd input[type=range]{accent-color:var(--spd);width:150px;cursor:pointer;vertical-align:middle}
+.spd .rate{min-width:58px;text-align:center;color:inherit;cursor:pointer;
+  border-bottom:1px dotted color-mix(in srgb, var(--spd) 60%, transparent)}
+.spd .rate:hover{color:var(--spd)}
 </style>
 <div class='spd' title='Playback speed &mdash; [ slower, ] faster, \\ reset'>
   <span>Speed</span>
