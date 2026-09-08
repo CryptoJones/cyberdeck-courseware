@@ -20,5 +20,8 @@ site/
 # Source textbooks / copyrighted course inputs are never committed
 *.pdf
 
+# Playwright + its browsers for pipeline/check_player.mjs (npm install to restore)
+pipeline/node_modules/
+
 # OS cruft
 .DS_Store
