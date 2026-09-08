@@ -33,6 +33,8 @@ import json
 import os
 import shutil
 import sys
+
+import speed_control
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -186,6 +188,10 @@ def write_player_pages(bundle, rendered):
             title=html.escape(title), slug=html.escape(slug),
             prev=prv, next=tgt, nextcls=nextcls, upnext=upnext,
             nextlabel=nextlabel, next_js=json.dumps(nextval))
+        # Fine-grained playback speed (0.25-2x in 0.05 steps). Applied AFTER .format()
+        # so the injected JS needs no brace doubling, and so the same function serves
+        # both this generator and the in-place patcher for already-deployed pages.
+        page = speed_control.patch_html(page)
         (vdir / f"{slug}.html").write_text(page, encoding="utf-8")
 
 
