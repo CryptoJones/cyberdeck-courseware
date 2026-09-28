@@ -34,6 +34,7 @@ import os
 import shutil
 import sys
 
+import loop_control
 import speed_control
 from pathlib import Path
 
@@ -192,6 +193,9 @@ def write_player_pages(bundle, rendered):
         # so the injected JS needs no brace doubling, and so the same function serves
         # both this generator and the in-place patcher for already-deployed pages.
         page = speed_control.patch_html(page)
+        # A-B / whole-video looping plus restart and play/pause buttons; same
+        # generator-or-patcher shape as speed_control.
+        page = loop_control.patch_html(page)
         (vdir / f"{slug}.html").write_text(page, encoding="utf-8")
 
 

@@ -42,6 +42,12 @@ Every production tunable (voice, speed, crossfade, zoom, fps, resolution) is an
 environment variable with a locked-in default — see the top of
 [`pipeline/build_section.sh`](pipeline/build_section.sh).
 
+Each generated player page auto-advances to the next section and carries viewer
+controls: fine-grained playback speed (0.25–2x in 0.05 steps,
+`speed_control.py`), restart and play/pause buttons, and whole-video or A-B
+looping with typed timecodes or A/B hotkeys (`loop_control.py`). Both modules
+also patch already-built pages in place: `python3 pipeline/loop_control.py dist/videos/`.
+
 ## Quickstart
 
 **Prerequisites:** Python 3.11+, [FFmpeg](https://ffmpeg.org/), and a
@@ -107,6 +113,7 @@ correctly.
 |---|---|
 | `pipeline/` | The engine: render, QA gate, TTS, particles, Manim helpers, site builder |
 | `pipeline/qa_frames.py` | The no-bleed gate (luma threshold, edge inset, min-pixel count) |
+| `pipeline/speed_control.py`, `pipeline/loop_control.py` | Player-page speed, transport and loop controls |
 | `pipeline/manim_cyberdeck.py` | `CyberScene` base, neon palette, `safe_fit`, `neon_axes` |
 | `pipeline/AUTHORING.md` | Full section-authoring guide |
 | `course/demo-pythagoras/` | A complete, original worked example |
